@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Convert a media link into an MP3 or MP4 download with FFmpeg." />
+  <title>Relay — Media downloader</title>
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/assets/styles.css" />
+  <script src="/assets/app.js" defer></script>
+</head>
+
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="Relay home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M5 12h13m-5-5 5 5-5 5" />
+            <path d="M5 7v10" />
+          </svg>
+        </span>
+        <span>relay<span class="brand-period">.</span></span>
+      </a>
+      <div class="topbar-right">
+        <span class="api-indicator" id="api-indicator" aria-live="polite">
+          <span class="status-dot"></span>
+          <span id="api-status">Connecting to server</span>
+        </span>
+        <span class="topbar-divider" aria-hidden="true"></span>
+        <span class="topbar-caption">A little utility for your media</span>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="page-title">
+        <div class="hero-copy">
+          <div class="eyebrow"><span></span> YOUR MEDIA, YOUR WAY</div>
+          <h1 id="page-title">A link in.<br /><span>A file out.</span></h1>
+          <p class="hero-description">
+            Paste a media link and let Relay do the heavy lifting. Ready to
+            save, in just a moment.
+          </p>
+          <div class="hero-note">
+            <span class="note-icon" aria-hidden="true">
+              <svg viewBox="0 0 20 20" fill="none">
+                <path d="M10 2.5 3.5 5v4.2c0 4.1 2.8 6.8 6.5 8.3 3.7-1.5 6.5-4.2 6.5-8.3V5L10 2.5Z" />
+                <path d="m7.5 9.8 1.7 1.7 3.5-3.8" />
+              </svg>
+            </span>
+            <span>Processed on your server. No account, no fuss.</span>
+          </div>
+        </div>
+
+        <section class="download-card" aria-labelledby="card-title">
+          <div class="card-heading">
+            <div>
+              <div class="card-kicker">QUICK CONVERT</div>
+              <h2 id="card-title">Start with a link</h2>
+            </div>
+            <span class="card-sparkle" aria-hidden="true">✳</span>
+          </div>
+
+          <form id="download-form">
+            <label class="field-label" for="media-url">Media URL</label>
+            <div class="url-field">
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M8.1 11.9a3.8 3.8 0 0 0 5.4 0l2-2a3.8 3.8 0 0 0-5.4-5.4l-1.1 1.1" />
+                <path d="M11.9 8.1a3.8 3.8 0 0 0-5.4 0l-2 2a3.8 3.8 0 0 0 5.4 5.4l1.1-1.1" />
+              </svg>
+              <input id="media-url" name="url" type="url" placeholder="https://example.com/video" autocomplete="url"
+                required />
+              <button class="paste-button" type="button" id="paste-button">
+                Paste
+              </button>
+            </div>
+
+            <div class="format-row">
+              <label class="field-label" for="output-format">Save as</label>
+              <div class="format-select-wrap">
+                <span class="format-icon" id="format-icon" aria-hidden="true">
+                  <svg viewBox="0 0 20 20" fill="none">
+                    <path d="M8 4v8.4a2.5 2.5 0 1 1-1.5-2.3V6l8-2v8.4a2.5 2.5 0 1 1-1.5-2.3V2L8 4Z" />
+                  </svg>
+                </span>
+                <select id="output-format" name="format">
+                  <option value="mp3">MP3 audio</option>
+                  <option value="mp4">MP4 video</option>
+                </select>
+                <svg class="select-chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="m4 6 4 4 4-4" />
+                </svg>
+              </div>
+              <span class="format-hint" id="format-hint">192 kbps · compact</span>
+            </div>
+
+            <button class="submit-button" type="submit" id="submit-button">
+              <span id="submit-label">Make it a download</span>
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M4 10h12m-4-4 4 4-4 4" />
+              </svg>
+            </button>
+          </form>
+
+          <div class="job-panel" id="job-panel" hidden aria-live="polite">
+            <div class="job-topline">
+              <div class="job-status">
+                <span class="job-spinner" id="job-spinner" aria-hidden="true"></span>
+                <span id="job-title">Preparing your file</span>
+              </div>
+              <span class="job-percent" id="job-percent"></span>
+            </div>
+            <div class="progress-track" id="progress-track">
+              <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <p class="job-message" id="job-message"></p>
+            <a class="download-link" id="download-link" hidden>
+              <span>Download your file</span>
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M10 3v9m-3-3 3 3 3-3M4 14v2h12v-2" />
+              </svg>
+            </a>
+            <button class="retry-button" id="retry-button" type="button" hidden>
+              Try another link
+            </button>
+          </div>
+
+          <div class="card-foot">
+            <span class="foot-lock" aria-hidden="true">
+              <svg viewBox="0 0 16 16" fill="none">
+                <rect x="3.5" y="7" width="9" height="7" rx="1.5" />
+                <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" />
+              </svg>
+            </span>
+            Links are only used to create your download.
+          </div>
+        </section>
+      </section>
+
+      <section class="steps" aria-label="How it works">
+        <div class="steps-heading">
+          <span class="section-label">THAT'S THE WHOLE PROCESS</span>
+          <span class="steps-rule" aria-hidden="true"></span>
+        </div>
+        <div class="steps-grid">
+          <article class="step">
+            <span class="step-number">01</span>
+            <div class="step-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M9.5 14.5 14.5 9.5m-7 2.5 2-2a4.2 4.2 0 0 1 6 6l-2 2a4.2 4.2 0 0 1-6 0m9-5 2-2a4.2 4.2 0 0 0-6-6l-2 2" />
+              </svg>
+            </div>
+            <div>
+              <h3>Drop in a link</h3>
+              <p>Use a direct link to media you can access.</p>
+            </div>
+          </article>
+          <article class="step">
+            <span class="step-number">02</span>
+            <div class="step-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M4 7h16M7 4v6m10-6v6M5 12h14v7H5z" />
+                <path d="M9 15h2m3 0h1" />
+              </svg>
+            </div>
+            <div>
+              <h3>Pick your format</h3>
+              <p>Choose MP3 for audio or MP4 for video.</p>
+            </div>
+          </article>
+          <article class="step">
+            <span class="step-number">03</span>
+            <div class="step-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 3v12m-4-4 4 4 4-4M5 16v4h14v-4" />
+              </svg>
+            </div>
+            <div>
+              <h3>Save it for later</h3>
+              <p>Your finished file is ready to download.</p>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span><span class="footer-mark">relay.</span> Made to keep things simple.</span>
+      <span>Powered by FFmpeg <span class="footer-dot">·</span> Use media you have permission to download.</span>
+    </footer>
+  </div>
+</body>
+
+</html>

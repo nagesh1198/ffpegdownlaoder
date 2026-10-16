@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: relay-media-downloader
+    runtime: docker
+    plan: free
+    region: oregon
+    envVars:
+      - key: DOWNLOAD_RETENTION_SECONDS
+        value: "1800"

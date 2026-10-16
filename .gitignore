@@ -1,0 +1,17 @@
+# Python
+backend/venv/
+backend/__pycache__/
+*.py[cod]
+*$py.class
+
+# Temporary downloads and media
+backend/temp/
+*.mp4
+*.mp3
+*.log
+
+# Environment & IDE
+.env
+.idea/
+.vscode/
+.DS_Store
